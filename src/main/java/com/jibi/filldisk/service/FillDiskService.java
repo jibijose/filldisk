@@ -1,5 +1,6 @@
 package com.jibi.filldisk.service;
 
+import com.jibi.filldisk.util.DateUtil;
 import com.jibi.filldisk.util.FileUtil;
 import com.jibi.filldisk.util.SystemUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -20,21 +21,61 @@ public class FillDiskService {
         File fileDrive = new File(drive);
 
         String driveDumpDir = drive + "\\DUMPDIR";
-        FileUtils.deleteDirectory(new File(driveDumpDir));
+        //FileUtils.deleteDirectory(new File(driveDumpDir));
         File fileDriveDumppDir = new File(driveDumpDir);
-        fileDriveDumppDir.mkdirs();
+        //fileDriveDumppDir.mkdirs();
         log.debug("Created directory {}", driveDumpDir);
 
         createFillFiles(fileDriveDumppDir);
+        log.info("Completed creating fill template files");
+
+        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 100 > 0) {
+            FileUtil.createFile(driveDumpDir, "100GB", DateUtil.getDateTimeFormatted() + "-100GB");
+        }
+        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 10 > 0) {
+            FileUtil.createFile(driveDumpDir, "10GB", DateUtil.getDateTimeFormatted() + "-10GB");
+        }
+        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 > 0) {
+            FileUtil.createFile(driveDumpDir, "1GB", DateUtil.getDateTimeFormatted() + "-1GB");
+        }
+
+        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 100 > 0) {
+            FileUtil.createFile(driveDumpDir, "100MB", DateUtil.getDateTimeFormatted() + "-100MB");
+        }
+        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 10 > 0) {
+            FileUtil.createFile(driveDumpDir, "10MB", DateUtil.getDateTimeFormatted() + "-10MB");
+        }
+        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 > 0) {
+            FileUtil.createFile(driveDumpDir, "1MB", DateUtil.getDateTimeFormatted() + "-1MB");
+        }
+
+        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 100 > 0) {
+            FileUtil.createFile(driveDumpDir, "100KB", DateUtil.getDateTimeFormatted() + "-100KB");
+        }
+        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 10 > 0) {
+            FileUtil.createFile(driveDumpDir, "10KB", DateUtil.getDateTimeFormatted() + "-10KB");
+        }
+        while (SystemUtil.getFreeSpace(fileDrive) / 1024 > 0) {
+            FileUtil.createFile(driveDumpDir, "1KB", DateUtil.getDateTimeFormatted() + "-1KB");
+        }
+
+        while (SystemUtil.getFreeSpace(fileDrive) / 100 > 0) {
+            FileUtil.createFile(driveDumpDir, "100B", DateUtil.getDateTimeFormatted() + "-100B");
+        }
+        while (SystemUtil.getFreeSpace(fileDrive) / 10 > 0) {
+            FileUtil.createFile(driveDumpDir, "10B", DateUtil.getDateTimeFormatted() + "-10B");
+        }
+        while (SystemUtil.getFreeSpace(fileDrive) > 0) {
+            FileUtil.createFile(driveDumpDir, "1B", DateUtil.getDateTimeFormatted() + "-1B");
+        }
     }
 
     private boolean createFillFiles(File fileDriveDumppDir) throws IOException {
-        //TODO create 1KB 1MB 1GB files in driveDumpDir
         if (SystemUtil.getFreeSpace(fileDriveDumppDir) == 0) {
             return false;
         }
 
-        checkAndCreateFillFile(fileDriveDumppDir, 1);
+        /*checkAndCreateFillFile(fileDriveDumppDir, 1);
         checkAndCreateFillFile(fileDriveDumppDir, 10);
         checkAndCreateFillFile(fileDriveDumppDir, 100);
 
@@ -46,9 +87,9 @@ public class FillDiskService {
         checkAndCreateFillFile(fileDriveDumppDir, 1024 * 1024 * 10);
         checkAndCreateFillFile(fileDriveDumppDir, 1024 * 1024 * 100);
 
-        checkAndCreateFillFile(fileDriveDumppDir, 1024 * 1024 * 1024 * 1);
+        checkAndCreateFillFile(fileDriveDumppDir, 1024 * 1024 * 1024 * 1);*/
         checkAndCreateFillFile(fileDriveDumppDir, 1024 * 1024 * 1024 * 10);
-        checkAndCreateFillFile(fileDriveDumppDir, 1024 * 1024 * 1024 * 100);
+        //checkAndCreateFillFile(fileDriveDumppDir, 1024 * 1024 * 1024 * 100);
 
         return true;
     }
@@ -57,14 +98,14 @@ public class FillDiskService {
         if (SystemUtil.getFreeSpace(fileDriveDumppDir) / sizeBytes > 0) {
             String fileName = fileDriveDumppDir + "\\" + FileUtil.FILLFILESMAP.get(sizeBytes);
             createFillFile(fileDriveDumppDir, new File(fileName), sizeBytes);
-            log.info("Created fill file {}", FileUtil.FILLFILESMAP.get(sizeBytes));
+            log.info("Created fill template file {}", FileUtil.FILLFILESMAP.get(sizeBytes));
         } else {
-            log.info("Skipped fill file {}", FileUtil.FILLFILESMAP.get(sizeBytes));
+            log.info("Skipped fill template file {}", FileUtil.FILLFILESMAP.get(sizeBytes));
         }
     }
 
     private void createFillFile(File fileDriveDumppDir, File fileName, int sizeBytes) throws IOException {
-        log.debug("Writing file {}", fileName);
+        log.debug("Writing template file {}", fileName);
         int pendingSizeBytes = sizeBytes;
         int toWritePendingSizeBytes;
         int toCopySize;
@@ -138,21 +179,5 @@ public class FillDiskService {
             }
         }
 
-    }
-
-
-    private void createFillFileOld(File fileDriveDumppDir, String fileName, int sizeBytes) throws IOException {
-        log.debug("Writing file {}", fileName);
-        int createSizeBytes = sizeBytes;
-        File fileFill = new File(fileDriveDumppDir + "\\" + fileName);
-        if (sizeBytes < 1024) {
-            while (createSizeBytes > 0) {
-                FileUtils.writeStringToFile(fileFill, "0", "UTF-8", true);
-                createSizeBytes--;
-            }
-            log.debug("Wrote file {}", fileName);
-        } else {
-            log.debug("Wrote file {}", fileName);
-        }
     }
 }

@@ -1,5 +1,8 @@
 package com.jibi.filldisk.util;
 
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -7,6 +10,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 public class FileUtil {
 
     public static Map<Integer, String> FILLFILESMAP;
@@ -27,10 +31,11 @@ public class FileUtil {
         FILLFILESMAP.put(1024 * 1024 * 1024 * 100, "100GB");
     }
 
-    private static void createFile(final String fromFilename, final String toFilename) throws Exception {
-        Path copied = Paths.get("C:\\DUMPDIR\\" + toFilename);
-        Path originalPath = Paths.get("src/main/resources/" + fromFilename);
+    public static void createFile(final String driveDumpDir, final String fromFilename, final String toFilename) throws IOException {
+        Path copied = Paths.get(driveDumpDir + "\\" + toFilename);
+        Path originalPath = Paths.get(driveDumpDir + "\\" + fromFilename);
         Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+        log.debug("Created fill file {}", toFilename);
     }
 
 }
