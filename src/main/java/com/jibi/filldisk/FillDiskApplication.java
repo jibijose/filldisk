@@ -1,13 +1,19 @@
 package com.jibi.filldisk;
 
+import com.jibi.filldisk.service.FillDiskService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.*;
+import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
+import javax.annotation.PostConstruct;
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,33 +22,48 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @SpringBootApplication
-public class FillDiskApplication {
+@Slf4j
+public class FillDiskApplication implements CommandLineRunner {
+
+    @Autowired
+    private FillDiskService fillDiskService;
+
+    private Options options;
+    private CommandLineParser parser;
+    private CommandLine cmd;
+    private HelpFormatter formatter;
+
+    @PostConstruct
+    public void init() {
+        options = new Options();
+        parser = new DefaultParser();
+        formatter = new HelpFormatter();
+
+        final Option fileOption = Option.builder("d")
+                .argName("drive").optionalArg(false)
+                .hasArg()
+                .desc("Drive to be be filled")
+                .build();
+
+        options.addOption(fileOption);
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        log.info("Application Started !!");
+
+        CommandLine cmd = parser.parse(options, args);
+
+        String driveLetter = cmd.getOptionValue("d");
+
+        fillDiskService.fillDrive(driveLetter);
+    }
+
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(FillDiskApplication.class, args);
 
-        FileSystemView fsv = FileSystemView.getFileSystemView();
-
-        File[] drives = File.listRoots();
-        if (drives != null && drives.length > 0) {
-            for (File aDrive : drives) {
-                System.out.println("Drive Letter: " + aDrive);
-                System.out.println("\tType: " + fsv.getSystemTypeDescription(aDrive));
-                System.out.println("\tTotal space: " + aDrive.getTotalSpace());
-                System.out.println("\tFree space: " + aDrive.getFreeSpace());
-                System.out.println();
-            }
-        }
-
-        String drive = "C:\\";
-        File fileDrive = new File(drive);
-
-        String driveDumpDir = drive + "\\DUMPDIR";
-        File theDir = new File(driveDumpDir);
-        if (!theDir.exists()) {
-            theDir.mkdirs();
-        }
-
+        /*
         while (getFreeSpace(fileDrive) / 1024 / 1024 / 1024 > 0) {
             createFile("1GB.txt", getDateTimeFormatted() + "-1GB.txt");
         }
@@ -76,24 +97,9 @@ public class FillDiskApplication {
         while (getFreeSpace(fileDrive) > 0) {
             createFile("1B.txt", getDateTimeFormatted() + "-1B.txt");
         }
-
-    }
-
-    private static long getFreeSpace(File file) {
-        return file.getFreeSpace();
-    }
-
-    private static String getDateTimeFormatted() {
-        String pattern = "yyyyMMdd-HHmmssSSS";
-        return new SimpleDateFormat(pattern).format(new Date());
+*/
     }
 
 
-    private static void createFile(final String fromFilename, final String toFilename) throws Exception {
-        Path copied = Paths.get("C:\\DUMPDIR\\" + toFilename);
-        Path originalPath = Paths.get("src/main/resources/" + fromFilename);
-        Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
-        Thread.sleep(1);
-    }
 
 }
