@@ -28,13 +28,19 @@ public class FillDiskApplication implements CommandLineRunner {
         parser = new DefaultParser();
         formatter = new HelpFormatter();
 
-        final Option fileOption = Option.builder("d")
+        final Option driveOption = Option.builder("d")
                 .argName("drive").optionalArg(false)
                 .hasArg()
                 .desc("Drive to be be filled")
                 .build();
+        final Option fillSizeOption = Option.builder("f")
+                .argName("drive").optionalArg(false)
+                .hasArg()
+                .desc("Fill size")
+                .build();
 
-        options.addOption(fileOption);
+        options.addOption(driveOption);
+        options.addOption(fillSizeOption);
     }
 
     @Override
@@ -44,15 +50,15 @@ public class FillDiskApplication implements CommandLineRunner {
         CommandLine cmd = parser.parse(options, args);
 
         String driveLetter = cmd.getOptionValue("d");
+        int fillSize = Integer.parseInt(cmd.getOptionValue("f"));
 
-        fillDiskService.fillDrive(driveLetter);
+        fillDiskService.fillDrive(driveLetter, fillSize);
     }
 
 
     public static void main(String[] args) throws Exception {
         SpringApplication.run(FillDiskApplication.class, args);
     }
-
 
 
 }

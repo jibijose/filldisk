@@ -1,0 +1,52 @@
+<configuration>
+    <contextName>WebContext</contextName>
+    <property name="BASE_PATH" value="${logging.appender.file.base.path:-/tmp}" />
+    <property name="FILE_NAME" value="${logging.appender.file.name:-logFile}" />
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.appender.console.level:-DEBUG}</level>
+        </filter>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5p | [%thread] [%X{APPNAME}] %logger{5}:%L - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${logging.appender.file.level:-OFF}</level>
+        </filter>
+        <file>${BASE_PATH}/${FILE_NAME}.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5p | [%thread] [%X{APPNAME}] %logger{5}:%L - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${FILE_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="com.jibi" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <appender name="STDOUT" class="ch.qos.logback.classic.AsyncAppender" >
+        <appender-ref ref="CONSOLE" />
+        <queueSize>10000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+    <appender name="FILELOG" class="ch.qos.logback.classic.AsyncAppender" >
+        <appender-ref ref="FILE" />
+        <queueSize>10000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+
+    <root>
+        <level value="${logger.root.level:-WARN}"/>
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILELOG"/>
+    </root>
+
+</configuration>
