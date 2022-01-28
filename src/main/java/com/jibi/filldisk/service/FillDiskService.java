@@ -30,11 +30,11 @@ public class FillDiskService {
         createFillFiles(fileDriveDumppDir, fillSize);
         log.info("Completed creating fill template files");
 
-        /*if (fillSize == 4) {
+        if (fillSize == 4) {
             startDumpFiles4(fileDrive, driveDumpDir);
         } else if (fillSize == 10) {
             startDumpFiles10(fileDrive, driveDumpDir);
-        }*/
+        }
     }
 
     private boolean createFillFiles(File fileDriveDumppDir, int fillSize) throws IOException {
@@ -52,8 +52,8 @@ public class FillDiskService {
             checkAndCreateFillFile4(fileDriveDumppDir, 1L * 1024 * 1024 * 400);
 
             checkAndCreateFillFile4(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 4);
-            checkAndCreateFillFile4(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 40);
-            checkAndCreateFillFile4(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 400);
+            //checkAndCreateFillFile4(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 40);
+            //checkAndCreateFillFile4(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 400);
         } else if (fillSize == 10) {
             checkAndCreateFillFile10(fileDriveDumppDir, 1L * 1);
             checkAndCreateFillFile10(fileDriveDumppDir, 1L * 10);
@@ -68,8 +68,8 @@ public class FillDiskService {
             checkAndCreateFillFile10(fileDriveDumppDir, 1L * 1024 * 1024 * 100);
 
             checkAndCreateFillFile10(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 1);
-            checkAndCreateFillFile10(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 10);
-            checkAndCreateFillFile10(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 100);
+            //checkAndCreateFillFile10(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 10);
+            //checkAndCreateFillFile10(fileDriveDumppDir, 1L * 1024 * 1024 * 1024 * 100);
         }
         return true;
     }
@@ -154,12 +154,12 @@ public class FillDiskService {
     }
 
     private void startDumpFiles4(File fileDrive, String driveDumpDir) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 100 / 4 > 0) {
-            FileUtil.createFile(driveDumpDir, "400GB", DateUtil.getDateTimeFormatted() + "-400GB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 10 / 4 > 0) {
-            FileUtil.createFile(driveDumpDir, "40GB", DateUtil.getDateTimeFormatted() + "-40GB");
-        }
+        //while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 100 / 4 > 0) {
+        //    FileUtil.createFile(driveDumpDir, "400GB", DateUtil.getDateTimeFormatted() + "-400GB");
+        //}
+        //while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 10 / 4 > 0) {
+        //    FileUtil.createFile(driveDumpDir, "40GB", DateUtil.getDateTimeFormatted() + "-40GB");
+        //}
         while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 4 > 0) {
             FileUtil.createFile(driveDumpDir, "4GB", DateUtil.getDateTimeFormatted() + "-4GB");
         }
@@ -186,12 +186,12 @@ public class FillDiskService {
     }
 
     private void startDumpFiles10(File fileDrive, String driveDumpDir) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 100 > 0) {
-            FileUtil.createFile(driveDumpDir, "100GB", DateUtil.getDateTimeFormatted() + "-100GB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 10 > 0) {
-            FileUtil.createFile(driveDumpDir, "10GB", DateUtil.getDateTimeFormatted() + "-10GB");
-        }
+        //while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 100 > 0) {
+        //    FileUtil.createFile(driveDumpDir, "100GB", DateUtil.getDateTimeFormatted() + "-100GB");
+        //}
+        //while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 10 > 0) {
+        //    FileUtil.createFile(driveDumpDir, "10GB", DateUtil.getDateTimeFormatted() + "-10GB");
+        //}
         while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 > 0) {
             FileUtil.createFile(driveDumpDir, "1GB", DateUtil.getDateTimeFormatted() + "-1GB");
         }

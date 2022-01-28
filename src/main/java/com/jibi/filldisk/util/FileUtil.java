@@ -37,14 +37,14 @@ public class FileUtil {
         FILLFILESMAP.put(1L * 1024 * 1024 * 400, "400MB");
         FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 1, "1GB");
         FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 4, "4GB");
-        FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 10, "10GB");
-        FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 40, "40GB");
-        FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 100, "100GB");
-        FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 400, "400GB");
+        //FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 10, "10GB");
+        //FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 40, "40GB");
+        //FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 100, "100GB");
+        //FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 400, "400GB");
 
         FILLORDER4 = new LinkedHashSet<>();
-        FILLORDER4.add(1L * 1024 * 1024 * 1024 * 400);
-        FILLORDER4.add(1L * 1024 * 1024 * 1024 * 40);
+        //FILLORDER4.add(1L * 1024 * 1024 * 1024 * 400);
+        //FILLORDER4.add(1L * 1024 * 1024 * 1024 * 40);
         FILLORDER4.add(1L * 1024 * 1024 * 1024 * 4);
         FILLORDER4.add(1L * 1024 * 1024 * 400);
         FILLORDER4.add(1L * 1024 * 1024 * 40);
@@ -54,8 +54,9 @@ public class FileUtil {
         FILLORDER4.add(1L * 1024 * 4);
 
         FILLORDER10 = new LinkedHashSet<>();
-        FILLORDER10.add(1L * 1024 * 1024 * 1024 * 100);
-        FILLORDER10.add(1L * 1024 * 1024 * 1024 * 10);
+        //FILLORDER10.add(1L * 1024 * 1024 * 1024 * 100);
+        //FILLORDER10.add(1L * 1024 * 1024 * 1024 * 10);
+        FILLORDER10.add(1L * 1024 * 1024 * 1024 * 1);
         FILLORDER10.add(1L * 1024 * 1024 * 1024 * 1);
         FILLORDER10.add(1L * 1024 * 1024 * 100);
         FILLORDER10.add(1L * 1024 * 1024 * 10);
