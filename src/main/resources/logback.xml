@@ -27,7 +27,7 @@
         </rollingPolicy>
     </appender>
 
-    <logger name="com.jibi" level="DEBUG" additivity="false">
+    <logger name="com.jibi" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </logger>

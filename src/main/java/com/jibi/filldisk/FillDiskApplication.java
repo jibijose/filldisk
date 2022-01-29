@@ -34,13 +34,19 @@ public class FillDiskApplication implements CommandLineRunner {
                 .desc("Drive to be be filled")
                 .build();
         final Option fillSizeOption = Option.builder("f")
-                .argName("drive").optionalArg(false)
+                .argName("fillesize").optionalArg(false)
                 .hasArg()
                 .desc("Fill size")
+                .build();
+        final Option randomDataOption = Option.builder("r")
+                .argName("randomdata").optionalArg(true)
+                .hasArg()
+                .desc("Random Data")
                 .build();
 
         options.addOption(driveOption);
         options.addOption(fillSizeOption);
+        options.addOption(randomDataOption);
     }
 
     @Override
@@ -51,11 +57,20 @@ public class FillDiskApplication implements CommandLineRunner {
 
         String driveLetter = cmd.getOptionValue("d");
         int fillSize = -1;
-        if ( cmd.getOptionValue("f") != null ) {
+        if (cmd.getOptionValue("f") != null) {
             fillSize = Integer.parseInt(cmd.getOptionValue("f"));
         }
 
-        fillDiskService.fillDrive(driveLetter, fillSize);
+        boolean randomData = false;
+        if (cmd.getOptionValue("r") != null) {
+            randomData = Boolean.parseBoolean(cmd.getOptionValue("r"));
+        }
+
+        if ( randomData ) {
+            fillDiskService.fillDriveRandom(driveLetter, fillSize);
+        } else {
+            fillDiskService.fillDriveStatic(driveLetter, fillSize);
+        }
     }
 
 

@@ -75,7 +75,7 @@ public class SystemUtil {
             formattedBytes = formattedBytes + String.format("%s B ", B_COUNT);
         }
 
-        log.debug("Staring bytes {}, left out bytes {}, formatted bytes [{}]", bytesLeft, counterBytesLeft, formattedBytes);
+        log.debug("Starting bytes {}, left out bytes {}, formatted bytes [{}]", bytesLeft, counterBytesLeft, formattedBytes);
         return formattedBytes;
     }
 
