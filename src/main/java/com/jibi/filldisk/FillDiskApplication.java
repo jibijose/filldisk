@@ -50,7 +50,10 @@ public class FillDiskApplication implements CommandLineRunner {
         CommandLine cmd = parser.parse(options, args);
 
         String driveLetter = cmd.getOptionValue("d");
-        int fillSize = Integer.parseInt(cmd.getOptionValue("f"));
+        int fillSize = -1;
+        if ( cmd.getOptionValue("f") != null ) {
+            fillSize = Integer.parseInt(cmd.getOptionValue("f"));
+        }
 
         fillDiskService.fillDrive(driveLetter, fillSize);
     }

@@ -70,8 +70,8 @@ public class FileUtil {
     }
 
     public static void createFile(final String driveDumpDir, final String fromFilename, final String toFilename) throws IOException {
-        Path copied = Paths.get(driveDumpDir + "\\" + toFilename);
-        Path originalPath = Paths.get(driveDumpDir + "\\" + fromFilename);
+        Path copied = Paths.get(driveDumpDir + "/" + toFilename);
+        Path originalPath = Paths.get(driveDumpDir + "/" + fromFilename);
         Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
         log.debug("Created fill file {}", toFilename);
     }
