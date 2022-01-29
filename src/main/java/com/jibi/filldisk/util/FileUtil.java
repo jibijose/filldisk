@@ -18,6 +18,11 @@ public class FileUtil {
     public static LinkedHashSet<Long> FILLORDER4;
     public static LinkedHashSet<Long> FILLORDER10;
 
+    public static long BYTES1GB = 1024 * 1024 * 1024;
+    public static long BYTES1MB = 1024 * 1024;
+    public static long BYTES1KB = 1024;
+    public static long BYTES1B = 1;
+
     static {
         FILLFILESMAP = new HashMap<Long, String>();
         FILLFILESMAP.put(1L * 1, "1B");

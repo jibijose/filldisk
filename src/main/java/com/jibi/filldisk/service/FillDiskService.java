@@ -23,6 +23,8 @@ public class FillDiskService {
             return;
         }
 
+        SystemUtil.getDrivesInfo();
+
         File fileDrive = getDrive(driveLetter);
         String driveDumpDir = getDriveDumpDir(driveLetter);
 
@@ -155,7 +157,7 @@ public class FillDiskService {
     }
 
     private void createFillFile4(File fileDriveDumpDir, File fileName, long sizeBytes) throws IOException {
-        log.debug("Writing template file {}", fileName);
+        log.debug("Writing template file {} Space left = {} Write Bytes = {}", fileName, SystemUtil.getFreeSpace(fileDriveDumpDir), sizeBytes);
         long pendingSizeBytes = sizeBytes;
 
         log.debug("Pending bytes = {}", pendingSizeBytes);
@@ -170,7 +172,7 @@ public class FillDiskService {
     }
 
     private void createFillFile10(File fileDriveDumpDir, File fileName, long sizeBytes) throws IOException {
-        log.debug("Writing template file {}", fileName);
+        log.debug("Writing template file {} Space left = {} Write Bytes = {}", fileName, SystemUtil.getFreeSpace(fileDriveDumpDir), sizeBytes);
         long pendingSizeBytes = sizeBytes;
         long toCopySize;
         FileInputStream toCopyFileInputStream;
@@ -195,26 +197,33 @@ public class FillDiskService {
         //    FileUtil.createFile(driveDumpDir, "40GB", DateUtil.getDateTimeFormatted() + "-40GB");
         //}
         while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 4 > 0) {
+            log.debug("Trying to create fill file 4GB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "4GB", DateUtil.getDateTimeFormatted() + "-4GB");
         }
 
         while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 100 / 4 > 0) {
+            log.debug("Trying to create fill file 400MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "400MB", DateUtil.getDateTimeFormatted() + "-400MB");
         }
         while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 10 / 4 > 0) {
+            log.debug("Trying to create fill file 40MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "40MB", DateUtil.getDateTimeFormatted() + "-40MB");
         }
         while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 4 > 0) {
+            log.debug("Trying to create fill file 4MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "4MB", DateUtil.getDateTimeFormatted() + "-4MB");
         }
 
         while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 100 / 4 > 0) {
+            log.debug("Trying to create fill file 400KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "400KB", DateUtil.getDateTimeFormatted() + "-400KB");
         }
         while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 10 / 4 > 0) {
+            log.debug("Trying to create fill file 40KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "40KB", DateUtil.getDateTimeFormatted() + "-40KB");
         }
         while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 4 > 0) {
+            log.debug("Trying to create fill file 4KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "4KB", DateUtil.getDateTimeFormatted() + "-4KB");
         }
     }
