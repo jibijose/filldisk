@@ -18,10 +18,14 @@ import java.util.Iterator;
 public class FillDiskService {
 
     public void fillDrive(String driveLetter, int fillSize) throws IOException {
-        String drive = driveLetter + ":\\";
-        File fileDrive = new File(drive);
+        if (driveLetter == null || fillSize == -1) {
+            log.info("Null values passed");
+            return;
+        }
 
-        String driveDumpDir = drive + "\\DUMPDIR";
+        File fileDrive = getDrive(driveLetter);
+        String driveDumpDir = getDriveDumpDir(driveLetter);
+
         FileUtils.deleteDirectory(new File(driveDumpDir));
         File fileDriveDumppDir = new File(driveDumpDir);
         fileDriveDumppDir.mkdirs();
@@ -35,6 +39,36 @@ public class FillDiskService {
         } else if (fillSize == 10) {
             startDumpFiles10(fileDrive, driveDumpDir);
         }
+    }
+
+    private File getDrive(String driveLetter) {
+        if (SystemUtil.isWindowsOS()) {
+            String drive = driveLetter + ":\\";
+            log.info("Windows drive = {}", drive);
+            return new File(drive);
+        } else {
+            String drive = driveLetter;
+            log.info("Non-Windows drive = {}", drive);
+            return new File(drive);
+        }
+    }
+
+    private String getDriveDumpDir(String driveLetter) {
+        String driveDumpDir;
+        if (SystemUtil.isWindowsOS()) {
+            String drive = driveLetter + ":\\";
+            driveDumpDir = drive + "\\DUMPDIR";
+            log.info("Windows drive dump dir = {}", driveDumpDir);
+        } else {
+            String drive = driveLetter;
+            if (drive.endsWith("/")) {
+                driveDumpDir = drive + "DUMPDIR";
+            } else {
+                driveDumpDir = drive + "/DUMPDIR";
+            }
+            log.info("Non-Windows drive dump dir = {}", driveDumpDir);
+        }
+        return driveDumpDir;
     }
 
     private boolean createFillFiles(File fileDriveDumppDir, int fillSize) throws IOException {
@@ -76,7 +110,7 @@ public class FillDiskService {
 
     private void checkAndCreateFillFile4(File fileDriveDumppDir, long sizeBytes) throws IOException {
         if (SystemUtil.getFreeSpace(fileDriveDumppDir) / sizeBytes > 0) {
-            String fileName = fileDriveDumppDir + "\\" + FileUtil.FILLFILESMAP.get(sizeBytes);
+            String fileName = fileDriveDumppDir + "/" + FileUtil.FILLFILESMAP.get(sizeBytes);
             createFillFile4(fileDriveDumppDir, new File(fileName), sizeBytes);
             log.info("Created fill template file {}", FileUtil.FILLFILESMAP.get(sizeBytes));
         } else {
@@ -86,7 +120,7 @@ public class FillDiskService {
 
     private void checkAndCreateFillFile10(File fileDriveDumppDir, long sizeBytes) throws IOException {
         if (SystemUtil.getFreeSpace(fileDriveDumppDir) / sizeBytes > 0) {
-            String fileName = fileDriveDumppDir + "\\" + FileUtil.FILLFILESMAP.get(sizeBytes);
+            String fileName = fileDriveDumppDir + "/" + FileUtil.FILLFILESMAP.get(sizeBytes);
             createFillFile10(fileDriveDumppDir, new File(fileName), sizeBytes);
             log.info("Created fill template file {}", FileUtil.FILLFILESMAP.get(sizeBytes));
         } else {
@@ -110,7 +144,7 @@ public class FillDiskService {
             long myCopySize = iterLinkedList.next();
             while (pendingSizeBytes - myCopySize > 0 || (pendingSizeBytes == myCopySize && originalPendingSizeBytes != myCopySize)) {
                 log.debug("Pending bytes = {}, copy block size = {}", pendingSizeBytes, myCopySize);
-                toCopyFileInputStream = new FileInputStream(fileDriveDumpDir.getAbsoluteFile() + "\\" + FileUtil.FILLFILESMAP.get(myCopySize));
+                toCopyFileInputStream = new FileInputStream(fileDriveDumpDir.getAbsoluteFile() + "/" + FileUtil.FILLFILESMAP.get(myCopySize));
                 toCopyFileContent = IOUtils.toString(toCopyFileInputStream, "UTF-8");
                 FileUtils.writeStringToFile(fileName, toCopyFileContent, "UTF-8", true);
                 pendingSizeBytes = pendingSizeBytes - myCopySize;
