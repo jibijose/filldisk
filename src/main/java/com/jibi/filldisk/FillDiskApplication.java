@@ -43,10 +43,16 @@ public class FillDiskApplication implements CommandLineRunner {
                 .hasArg()
                 .desc("Random Data")
                 .build();
+        final Option threadsOption = Option.builder("t")
+                .argName("threads").optionalArg(true)
+                .hasArg()
+                .desc("Number of threads")
+                .build();
 
         options.addOption(driveOption);
         options.addOption(fillSizeOption);
         options.addOption(randomDataOption);
+        options.addOption(threadsOption);
     }
 
     @Override
@@ -66,8 +72,13 @@ public class FillDiskApplication implements CommandLineRunner {
             randomData = Boolean.parseBoolean(cmd.getOptionValue("r"));
         }
 
-        if ( randomData ) {
-            fillDiskService.fillDriveRandom(driveLetter, fillSize);
+        int threads = 1;
+        if (cmd.getOptionValue("t") != null) {
+            threads = Integer.parseInt(cmd.getOptionValue("t"));
+        }
+
+        if (randomData) {
+            fillDiskService.fillDriveRandom(driveLetter, fillSize, threads);
         } else {
             fillDiskService.fillDriveStatic(driveLetter, fillSize);
         }

@@ -17,7 +17,7 @@ import java.util.Iterator;
 @Slf4j
 public class FillDiskService {
 
-    public void fillDriveRandom(String driveLetter, int fillSize) throws IOException {
+    public void fillDriveRandom(String driveLetter, int fillSize, int threads) throws IOException {
         if (driveLetter == null || fillSize == -1) {
             log.info("Null values passed");
             return;
@@ -34,9 +34,9 @@ public class FillDiskService {
         log.debug("Created directory {}", driveDumpDir);
 
         if (fillSize == 4) {
-            startDumpRandomFiles4(fileDrive, driveDumpDir);
+            startDumpRandomFiles4(fileDrive, driveDumpDir, threads);
         } else if (fillSize == 10) {
-            startDumpRandomFiles10(fileDrive, driveDumpDir);
+            startDumpRandomFiles10(fileDrive, driveDumpDir, threads);
         }
     }
 
@@ -205,131 +205,131 @@ public class FillDiskService {
         }
     }
 
-    private void startDumpRandomFiles4(File fileDrive, String driveDumpDir) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 100 / 4 > 0) {
+    private void startDumpRandomFiles4(File fileDrive, String driveDumpDir, int threads) throws IOException {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 100 > 0) {
             log.debug("Trying to create fill file 400MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-400MB", FileUtil.BYTES4MB * 100);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 10 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 10 > 0) {
             log.debug("Trying to create fill file 40MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-40MB", FileUtil.BYTES4MB * 10);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 1 > 0) {
             log.debug("Trying to create fill file 4MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-4MB", FileUtil.BYTES4MB * 1);
         }
 
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 100 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 100 > 0) {
             log.debug("Trying to create fill file 400KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-400KB", FileUtil.BYTES4KB * 100);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 10 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 10 > 0) {
             log.debug("Trying to create fill file 40KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-40KB", FileUtil.BYTES4KB * 10);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 1 > 0) {
             log.debug("Trying to create fill file 4KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-4KB", FileUtil.BYTES4KB * 1);
         }
     }
 
-    private void startDumpRandomFiles10(File fileDrive, String driveDumpDir) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 100 > 0) {
+    private void startDumpRandomFiles10(File fileDrive, String driveDumpDir, int threads) throws IOException {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 100 > 0) {
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-100MB", FileUtil.BYTES1MB * 100);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 10 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 10 > 0) {
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-10MB", FileUtil.BYTES1MB * 10);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 1 > 0) {
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-1MB", FileUtil.BYTES1MB * 1);
         }
 
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 100 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 100 > 0) {
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-100KB", FileUtil.BYTES1KB * 100);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 10 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 10 > 0) {
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-10KB", FileUtil.BYTES1KB * 10);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 1 > 0) {
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-1KB", FileUtil.BYTES1KB * 1);
         }
 
-        while (SystemUtil.getFreeSpace(fileDrive) / 100 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 100 > 0) {
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-100B", FileUtil.BYTES1B * 100);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 10 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 10 > 0) {
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-10B", FileUtil.BYTES1B * 10);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 1 > 0) {
             FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-1B", FileUtil.BYTES1B * 1);
         }
     }
 
     private void startDumpStaticFiles4(File fileDrive, String driveDumpDir) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4GB > 0) {
             log.debug("Trying to create fill file 4GB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "4GB", DateUtil.getDateTimeFormatted() + "-4GB");
         }
 
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 100 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 100 > 0) {
             log.debug("Trying to create fill file 400MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "400MB", DateUtil.getDateTimeFormatted() + "-400MB");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 10 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 10 > 0) {
             log.debug("Trying to create fill file 40MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "40MB", DateUtil.getDateTimeFormatted() + "-40MB");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 1 > 0) {
             log.debug("Trying to create fill file 4MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "4MB", DateUtil.getDateTimeFormatted() + "-4MB");
         }
 
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 100 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 100 > 0) {
             log.debug("Trying to create fill file 400KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "400KB", DateUtil.getDateTimeFormatted() + "-400KB");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 10 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 10 > 0) {
             log.debug("Trying to create fill file 40KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "40KB", DateUtil.getDateTimeFormatted() + "-40KB");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 4 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 1 > 0) {
             log.debug("Trying to create fill file 4KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
             FileUtil.createFile(driveDumpDir, "4KB", DateUtil.getDateTimeFormatted() + "-4KB");
         }
     }
 
     private void startDumpStaticFiles10(File fileDrive, String driveDumpDir) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 1024 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1GB / 1 > 0) {
             FileUtil.createFile(driveDumpDir, "1GB", DateUtil.getDateTimeFormatted() + "-1GB");
         }
 
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 100 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 100 > 0) {
             FileUtil.createFile(driveDumpDir, "100MB", DateUtil.getDateTimeFormatted() + "-100MB");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 / 10 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 10 > 0) {
             FileUtil.createFile(driveDumpDir, "10MB", DateUtil.getDateTimeFormatted() + "-10MB");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 1024 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 1 > 0) {
             FileUtil.createFile(driveDumpDir, "1MB", DateUtil.getDateTimeFormatted() + "-1MB");
         }
 
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 100 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 100 > 0) {
             FileUtil.createFile(driveDumpDir, "100KB", DateUtil.getDateTimeFormatted() + "-100KB");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 / 10 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 10 > 0) {
             FileUtil.createFile(driveDumpDir, "10KB", DateUtil.getDateTimeFormatted() + "-10KB");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 1024 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 1 > 0) {
             FileUtil.createFile(driveDumpDir, "1KB", DateUtil.getDateTimeFormatted() + "-1KB");
         }
 
-        while (SystemUtil.getFreeSpace(fileDrive) / 100 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 100 > 0) {
             FileUtil.createFile(driveDumpDir, "100B", DateUtil.getDateTimeFormatted() + "-100B");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / 10 > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 10 > 0) {
             FileUtil.createFile(driveDumpDir, "10B", DateUtil.getDateTimeFormatted() + "-10B");
         }
-        while (SystemUtil.getFreeSpace(fileDrive) > 0) {
+        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 1 > 0) {
             FileUtil.createFile(driveDumpDir, "1B", DateUtil.getDateTimeFormatted() + "-1B");
         }
     }
