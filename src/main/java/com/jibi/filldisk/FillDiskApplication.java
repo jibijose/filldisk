@@ -80,7 +80,7 @@ public class FillDiskApplication implements CommandLineRunner {
         if (randomData) {
             fillDiskService.fillDriveRandom(driveLetter, fillSize, threads);
         } else {
-            fillDiskService.fillDriveStatic(driveLetter, fillSize);
+            fillDiskService.fillDriveStatic(driveLetter, fillSize, threads);
         }
     }
 

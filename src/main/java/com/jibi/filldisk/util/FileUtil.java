@@ -3,6 +3,7 @@ package com.jibi.filldisk.util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.util.StopWatch;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,18 +74,38 @@ public class FileUtil {
         FILLORDER10.add(1L * 1);
     }
 
-    public static void createFile(final String driveDumpDir, final String fromFilename, final String toFilename) throws IOException {
-        Path copied = Paths.get(driveDumpDir + "/" + toFilename);
-        Path originalPath = Paths.get(driveDumpDir + "/" + fromFilename);
-        Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
-        log.info("Created fill file {}", toFilename);
+    public static void createFileStatic(final String driveDumpDir, final int iFile, final String toFilename) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        String toCopyFileName = DateUtil.getDateTimeFormatted() + "-" + toFilename;
+        log.debug("Creating random {} file {}", iFile, toFilename);
+        try {
+            Path copied = Paths.get(driveDumpDir, toCopyFileName);
+            Path originalPath = Paths.get(driveDumpDir, toFilename);
+            Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+            stopWatch.stop();
+            log.info("Created fill {} file {} in {} seconds", iFile, toCopyFileName, stopWatch.getTotalTimeSeconds());
+        } catch (IOException ioException) {
+            stopWatch.stop();
+            log.warn("Exception creating fill {} file {} in {} seconds", iFile, toCopyFileName, stopWatch.getTotalTimeSeconds(), ioException);
+        }
     }
 
-    public static void createFileRandom(final String driveDumpDir, final String toFilename, long byteSize) throws IOException {
-        String fileContent = RandomStringUtils.randomAlphanumeric((int) byteSize);
-        File file = new File(driveDumpDir + "/" + toFilename);
-        FileUtils.writeStringToFile(file, fileContent, "UTF-8", false);
-        log.info("Created random file {} with size {}", toFilename, (int) byteSize);
+    public static void createFileRandom(final String driveDumpDir, final int iFile, final String toFilename, long byteSize) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        String toCopyFileName = DateUtil.getDateTimeFormatted() + "-" + toFilename;
+        log.debug("Creating random {} file {} with size {}", iFile, toFilename, (int) byteSize);
+        try {
+            String fileContent = RandomStringUtils.randomAlphanumeric((int) byteSize);
+            File file = new File(driveDumpDir + "/" + toCopyFileName);
+            FileUtils.writeStringToFile(file, fileContent, "UTF-8", false);
+            stopWatch.stop();
+            log.info("Created random {} file {} with size {} in {} seconds", iFile, toFilename, (int) byteSize, stopWatch.getTotalTimeSeconds());
+        } catch (IOException ioException) {
+            stopWatch.stop();
+            log.warn("Exception creating random {} file {} with size {} in {} seconds", iFile, toCopyFileName, (int) byteSize, stopWatch.getTotalTimeSeconds(), ioException);
+        }
     }
 
 }

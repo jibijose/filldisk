@@ -1,8 +1,8 @@
 package com.jibi.filldisk.service;
 
-import com.jibi.filldisk.util.DateUtil;
 import com.jibi.filldisk.util.FileUtil;
 import com.jibi.filldisk.util.SystemUtil;
+import com.jibi.filldisk.util.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -12,12 +12,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 @Service
 @Slf4j
 public class FillDiskService {
 
-    public void fillDriveRandom(String driveLetter, int fillSize, int threads) throws IOException {
+    public void fillDriveRandom(String driveLetter, int fillSize, int threads) throws IOException, InterruptedException {
         if (driveLetter == null || fillSize == -1) {
             log.info("Null values passed");
             return;
@@ -40,7 +44,7 @@ public class FillDiskService {
         }
     }
 
-    public void fillDriveStatic(String driveLetter, int fillSize) throws IOException {
+    public void fillDriveStatic(String driveLetter, int fillSize, int threads) throws IOException, InterruptedException {
         if (driveLetter == null || fillSize == -1) {
             log.info("Null values passed");
             return;
@@ -60,9 +64,9 @@ public class FillDiskService {
         log.info("Completed creating fill template files");
 
         if (fillSize == 4) {
-            startDumpStaticFiles4(fileDrive, driveDumpDir);
+            startDumpStaticFiles4(fileDrive, driveDumpDir, threads);
         } else if (fillSize == 10) {
-            startDumpStaticFiles10(fileDrive, driveDumpDir);
+            startDumpStaticFiles10(fileDrive, driveDumpDir, threads);
         }
     }
 
@@ -205,132 +209,93 @@ public class FillDiskService {
         }
     }
 
-    private void startDumpRandomFiles4(File fileDrive, String driveDumpDir, int threads) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 100 > 0) {
-            log.debug("Trying to create fill file 400MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-400MB", FileUtil.BYTES4MB * 100);
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 10 > 0) {
-            log.debug("Trying to create fill file 40MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-40MB", FileUtil.BYTES4MB * 10);
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 1 > 0) {
-            log.debug("Trying to create fill file 4MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-4MB", FileUtil.BYTES4MB * 1);
-        }
+    private void executeRandomInThreadPool(File fileDrive, String driveDumpDir, int threads, long fileSizeBytes, String fileNameSuffix) throws InterruptedException {
+        int numOfFiles = (int) (SystemUtil.getFreeSpace(fileDrive) / fileSizeBytes);
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
+        IntStream.range(0, numOfFiles).forEach(iFile -> {
+            executor.submit(() -> {
+                FileUtil.createFileRandom(driveDumpDir, iFile, fileNameSuffix, fileSizeBytes);
+                return null;
+            });
+            Util.sleepMillisSilent(10);
+        });
 
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 100 > 0) {
-            log.debug("Trying to create fill file 400KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-400KB", FileUtil.BYTES4KB * 100);
+        while (executor.getTaskCount() != executor.getCompletedTaskCount()) {
+            log.info("Execution tasks for file size {} completed/total [{}/{}]", fileNameSuffix, executor.getCompletedTaskCount(), executor.getTaskCount());
+            Thread.sleep(60 * 1000);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 10 > 0) {
-            log.debug("Trying to create fill file 40KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-40KB", FileUtil.BYTES4KB * 10);
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 1 > 0) {
-            log.debug("Trying to create fill file 4KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-4KB", FileUtil.BYTES4KB * 1);
-        }
+        executor.shutdown();
+        executor.awaitTermination(60, TimeUnit.SECONDS);
     }
 
-    private void startDumpRandomFiles10(File fileDrive, String driveDumpDir, int threads) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 100 > 0) {
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-100MB", FileUtil.BYTES1MB * 100);
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 10 > 0) {
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-10MB", FileUtil.BYTES1MB * 10);
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 1 > 0) {
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-1MB", FileUtil.BYTES1MB * 1);
-        }
+    private void executeStaticInThreadPool(File fileDrive, String driveDumpDir, int threads, long fileSizeBytes, String fileNameSuffix) throws InterruptedException {
+        int numOfFiles = (int) (SystemUtil.getFreeSpace(fileDrive) / fileSizeBytes);
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
+        IntStream.range(0, numOfFiles).forEach(iFile -> {
+            executor.submit(() -> {
+                FileUtil.createFileStatic(driveDumpDir, iFile, fileNameSuffix);
+                return null;
+            });
+            Util.sleepMillisSilent(10);
+        });
 
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 100 > 0) {
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-100KB", FileUtil.BYTES1KB * 100);
+        while (executor.getTaskCount() != executor.getCompletedTaskCount()) {
+            log.info("Execution tasks for file size {} completed/total [{}/{}]", fileNameSuffix, executor.getCompletedTaskCount(), executor.getTaskCount());
+            Util.sleepSecondsSilent(60);
         }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 10 > 0) {
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-10KB", FileUtil.BYTES1KB * 10);
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 1 > 0) {
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-1KB", FileUtil.BYTES1KB * 1);
-        }
-
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 100 > 0) {
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-100B", FileUtil.BYTES1B * 100);
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 10 > 0) {
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-10B", FileUtil.BYTES1B * 10);
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 1 > 0) {
-            FileUtil.createFileRandom(driveDumpDir, DateUtil.getDateTimeFormatted() + "-1B", FileUtil.BYTES1B * 1);
-        }
+        executor.shutdown();
+        executor.awaitTermination(60, TimeUnit.SECONDS);
     }
 
-    private void startDumpStaticFiles4(File fileDrive, String driveDumpDir) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4GB > 0) {
-            log.debug("Trying to create fill file 4GB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFile(driveDumpDir, "4GB", DateUtil.getDateTimeFormatted() + "-4GB");
-        }
+    private void startDumpRandomFiles4(File fileDrive, String driveDumpDir, int threads) throws InterruptedException {
+        //executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 100, "400MB");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 10, "40MB");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 1, "4MB");
 
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 100 > 0) {
-            log.debug("Trying to create fill file 400MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFile(driveDumpDir, "400MB", DateUtil.getDateTimeFormatted() + "-400MB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 10 > 0) {
-            log.debug("Trying to create fill file 40MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFile(driveDumpDir, "40MB", DateUtil.getDateTimeFormatted() + "-40MB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4MB / 1 > 0) {
-            log.debug("Trying to create fill file 4MB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFile(driveDumpDir, "4MB", DateUtil.getDateTimeFormatted() + "-4MB");
-        }
-
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 100 > 0) {
-            log.debug("Trying to create fill file 400KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFile(driveDumpDir, "400KB", DateUtil.getDateTimeFormatted() + "-400KB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 10 > 0) {
-            log.debug("Trying to create fill file 40KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFile(driveDumpDir, "40KB", DateUtil.getDateTimeFormatted() + "-40KB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES4KB / 1 > 0) {
-            log.debug("Trying to create fill file 4KB space left = [{}]", SystemUtil.getFormattedFreeSpace(fileDrive));
-            FileUtil.createFile(driveDumpDir, "4KB", DateUtil.getDateTimeFormatted() + "-4KB");
-        }
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4KB * 100, "400KB");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4KB * 10, "40KB");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4KB * 1, "4KB");
     }
 
-    private void startDumpStaticFiles10(File fileDrive, String driveDumpDir) throws IOException {
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1GB / 1 > 0) {
-            FileUtil.createFile(driveDumpDir, "1GB", DateUtil.getDateTimeFormatted() + "-1GB");
-        }
+    private void startDumpRandomFiles10(File fileDrive, String driveDumpDir, int threads) throws InterruptedException {
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1MB * 100, "100MB");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1MB * 10, "10MB");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1MB * 1, "1MB");
 
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 100 > 0) {
-            FileUtil.createFile(driveDumpDir, "100MB", DateUtil.getDateTimeFormatted() + "-100MB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 10 > 0) {
-            FileUtil.createFile(driveDumpDir, "10MB", DateUtil.getDateTimeFormatted() + "-10MB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1MB / 1 > 0) {
-            FileUtil.createFile(driveDumpDir, "1MB", DateUtil.getDateTimeFormatted() + "-1MB");
-        }
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1KB * 100, "100KB");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1KB * 10, "10KB");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1KB * 1, "1KB");
 
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 100 > 0) {
-            FileUtil.createFile(driveDumpDir, "100KB", DateUtil.getDateTimeFormatted() + "-100KB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 10 > 0) {
-            FileUtil.createFile(driveDumpDir, "10KB", DateUtil.getDateTimeFormatted() + "-10KB");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1KB / 1 > 0) {
-            FileUtil.createFile(driveDumpDir, "1KB", DateUtil.getDateTimeFormatted() + "-1KB");
-        }
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 100, "100B");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 10, "10B");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 1, "1B");
+    }
 
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 100 > 0) {
-            FileUtil.createFile(driveDumpDir, "100B", DateUtil.getDateTimeFormatted() + "-100B");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 10 > 0) {
-            FileUtil.createFile(driveDumpDir, "10B", DateUtil.getDateTimeFormatted() + "-10B");
-        }
-        while (SystemUtil.getFreeSpace(fileDrive) / FileUtil.BYTES1B / 1 > 0) {
-            FileUtil.createFile(driveDumpDir, "1B", DateUtil.getDateTimeFormatted() + "-1B");
-        }
+    private void startDumpStaticFiles4(File fileDrive, String driveDumpDir, int threads) throws InterruptedException {
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4GB * 1, "4GB");
+
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 100, "400MB");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 10, "40MB");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 1, "4MB");
+
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4KB * 100, "400KB");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4KB * 10, "40KB");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4KB * 1, "4KB");
+    }
+
+    private void startDumpStaticFiles10(File fileDrive, String driveDumpDir, int threads) throws InterruptedException {
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1GB * 1, "1GB");
+
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1MB * 100, "100MB");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1MB * 10, "10MB");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1MB * 1, "1MB");
+
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1KB * 100, "100KB");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1KB * 10, "10KB");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1KB * 1, "1KB");
+
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 100, "100B");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 10, "10B");
+        executeStaticInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 1, "1B");
     }
 }
