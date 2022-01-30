@@ -61,10 +61,18 @@ public class FillDiskApplication implements CommandLineRunner {
 
         CommandLine cmd = parser.parse(options, args);
 
-        String driveLetter = cmd.getOptionValue("d");
+        String driveLetter;
+        if (cmd.getOptionValue("d") != null) {
+            driveLetter = cmd.getOptionValue("d");
+        } else {
+            throw new RuntimeException("Drive is needed");
+        }
+
         int fillSize = -1;
         if (cmd.getOptionValue("f") != null) {
             fillSize = Integer.parseInt(cmd.getOptionValue("f"));
+        } else {
+            throw new RuntimeException("Fill size is needed");
         }
 
         boolean randomData = false;
@@ -75,7 +83,13 @@ public class FillDiskApplication implements CommandLineRunner {
         int threads = 1;
         if (cmd.getOptionValue("t") != null) {
             threads = Integer.parseInt(cmd.getOptionValue("t"));
+        } else {
+            int processors = Runtime.getRuntime().availableProcessors();
+            if (processors >= 2) {
+                threads = processors / 2;
+            }
         }
+        log.info("Application started with drive={} fillSize={} randomData={} threads={}", driveLetter, fillSize, randomData, threads);
 
         if (randomData) {
             fillDiskService.fillDriveRandom(driveLetter, fillSize, threads);

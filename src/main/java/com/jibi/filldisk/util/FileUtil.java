@@ -84,10 +84,10 @@ public class FileUtil {
             Path originalPath = Paths.get(driveDumpDir, toFilename);
             Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
             stopWatch.stop();
-            log.info("Created fill {} file {} in {} seconds", iFile, toCopyFileName, stopWatch.getTotalTimeSeconds());
+            log.info("Created fill {} file {} in {}", iFile, toCopyFileName, getFormattedStopTime(stopWatch));
         } catch (IOException ioException) {
             stopWatch.stop();
-            log.warn("Exception creating fill {} file {} in {} seconds", iFile, toCopyFileName, stopWatch.getTotalTimeSeconds(), ioException);
+            log.warn("Exception creating fill {} file {} in {}", iFile, toCopyFileName, getFormattedStopTime(stopWatch), ioException);
         }
     }
 
@@ -101,11 +101,41 @@ public class FileUtil {
             File file = new File(driveDumpDir + "/" + toCopyFileName);
             FileUtils.writeStringToFile(file, fileContent, "UTF-8", false);
             stopWatch.stop();
-            log.info("Created random {} file {} with size {} in {} seconds", iFile, toFilename, (int) byteSize, stopWatch.getTotalTimeSeconds());
+            log.info("Created random {} file {} with size {} in {}", iFile, toFilename, (int) byteSize, getFormattedStopTime(stopWatch));
         } catch (IOException ioException) {
             stopWatch.stop();
-            log.warn("Exception creating random {} file {} with size {} in {} seconds", iFile, toCopyFileName, (int) byteSize, stopWatch.getTotalTimeSeconds(), ioException);
+            log.warn("Exception creating random {} file {} with size {} in {}", iFile, toCopyFileName, (int) byteSize, getFormattedStopTime(stopWatch), ioException);
         }
+    }
+
+    private static String getFormattedStopTime(StopWatch stopWatch) {
+        String formattedStopTime = "[";
+        long stopTime = stopWatch.getTotalTimeMillis();
+        long originalStopTime = stopTime;
+        if (stopTime > 60 * 60 * 1000) {
+            formattedStopTime = formattedStopTime + (stopTime / (60 * 60 * 1000)) + " hours, ";
+            stopTime = stopTime % (60 * 60 * 1000);
+        }
+        if (stopTime > 60 * 1000) {
+            formattedStopTime = formattedStopTime + (stopTime / (60 * 1000)) + " minutes, ";
+            stopTime = stopTime % (60 * 1000);
+        }
+        if (stopTime > 1000) {
+            formattedStopTime = formattedStopTime + (stopTime / (1000)) + " seconds, ";
+            stopTime = stopTime % (1000);
+        }
+        if (stopTime >= 1) {
+            formattedStopTime = formattedStopTime + (stopTime / (1)) + " millis, ";
+            stopTime = stopTime % (1);
+        }
+
+        formattedStopTime = formattedStopTime.trim();
+        if (formattedStopTime.endsWith(",")) {
+            formattedStopTime = formattedStopTime.substring(0, formattedStopTime.length() - 1);
+        }
+        formattedStopTime = formattedStopTime + "]";
+        log.debug("Formatted original stop time {} to {}", originalStopTime, formattedStopTime);
+        return formattedStopTime;
     }
 
 }

@@ -22,7 +22,7 @@ import java.util.stream.IntStream;
 public class FillDiskService {
 
     public void fillDriveRandom(String driveLetter, int fillSize, int threads) throws IOException, InterruptedException {
-        if (driveLetter == null || fillSize == -1) {
+        if (driveLetter == null || driveLetter == "" || fillSize == 0) {
             log.info("Null values passed");
             return;
         }
@@ -212,7 +212,7 @@ public class FillDiskService {
     private void executeRandomInThreadPool(File fileDrive, String driveDumpDir, int threads, long fileSizeBytes, String fileNameSuffix) throws InterruptedException {
         int numOfFiles = (int) (SystemUtil.getFreeSpace(fileDrive) / fileSizeBytes);
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
-        IntStream.range(0, numOfFiles).forEach(iFile -> {
+        IntStream.rangeClosed(1, numOfFiles).forEach(iFile -> {
             executor.submit(() -> {
                 FileUtil.createFileRandom(driveDumpDir, iFile, fileNameSuffix, fileSizeBytes);
                 return null;
@@ -231,7 +231,7 @@ public class FillDiskService {
     private void executeStaticInThreadPool(File fileDrive, String driveDumpDir, int threads, long fileSizeBytes, String fileNameSuffix) throws InterruptedException {
         int numOfFiles = (int) (SystemUtil.getFreeSpace(fileDrive) / fileSizeBytes);
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
-        IntStream.range(0, numOfFiles).forEach(iFile -> {
+        IntStream.rangeClosed(1, numOfFiles).forEach(iFile -> {
             executor.submit(() -> {
                 FileUtil.createFileStatic(driveDumpDir, iFile, fileNameSuffix);
                 return null;
@@ -248,7 +248,7 @@ public class FillDiskService {
     }
 
     private void startDumpRandomFiles4(File fileDrive, String driveDumpDir, int threads) throws InterruptedException {
-        //executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 100, "400MB");
+        executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 100, "400MB");
         executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 10, "40MB");
         executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 1, "4MB");
 
