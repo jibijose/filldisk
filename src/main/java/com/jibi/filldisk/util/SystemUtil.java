@@ -33,7 +33,8 @@ public class SystemUtil {
     }
 
     public static long getFreeSpace(File file) {
-        return file.getFreeSpace();
+        //return file.getFreeSpace();
+        return file.getUsableSpace();
     }
 
 

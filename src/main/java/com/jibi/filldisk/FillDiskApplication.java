@@ -1,5 +1,6 @@
 package com.jibi.filldisk;
 
+import com.jibi.filldisk.common.FileType;
 import com.jibi.filldisk.service.FillDiskService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
@@ -75,9 +76,9 @@ public class FillDiskApplication implements CommandLineRunner {
             throw new RuntimeException("Fill size is needed");
         }
 
-        boolean randomData = false;
+        FileType fileType = FileType.STATIC;
         if (cmd.getOptionValue("r") != null) {
-            randomData = Boolean.parseBoolean(cmd.getOptionValue("r"));
+            fileType = Enum.valueOf(FileType.class, cmd.getOptionValue("r"));
         }
 
         int threads = 1;
@@ -89,12 +90,18 @@ public class FillDiskApplication implements CommandLineRunner {
                 threads = processors / 2;
             }
         }
-        log.info("Application started with drive={} fillSize={} randomData={} threads={}", driveLetter, fillSize, randomData, threads);
+        log.info("Application started with drive={} fillSize={} randomData={} threads={}", driveLetter, fillSize, fileType, threads);
 
-        if (randomData) {
-            fillDiskService.fillDriveRandom(driveLetter, fillSize, threads);
-        } else {
-            fillDiskService.fillDriveStatic(driveLetter, fillSize, threads);
+        switch (fileType) {
+            case RANDOM:
+                fillDiskService.fillDriveRandom(driveLetter, fillSize, threads);
+                break;
+            case TUNEDRANDOM:
+                fillDiskService.fillDriveTunedRandom(driveLetter, fillSize, threads);
+                break;
+            case STATIC:
+                fillDiskService.fillDriveStatic(driveLetter, fillSize, threads);
+                break;
         }
     }
 

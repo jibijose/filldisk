@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 @Service
@@ -41,6 +42,32 @@ public class FillDiskService {
             startDumpRandomFiles4(fileDrive, driveDumpDir, threads);
         } else if (fillSize == 10) {
             startDumpRandomFiles10(fileDrive, driveDumpDir, threads);
+        }
+    }
+
+    public void fillDriveTunedRandom(String driveLetter, int fillSize, int threads) throws IOException, InterruptedException {
+        if (driveLetter == null || fillSize == -1) {
+            log.info("Null values passed");
+            return;
+        }
+
+        SystemUtil.getDrivesInfo();
+
+        File fileDrive = getDrive(driveLetter);
+        String driveDumpDir = getDriveDumpDir(driveLetter);
+
+        FileUtils.deleteDirectory(new File(driveDumpDir));
+        File fileDriveDumppDir = new File(driveDumpDir);
+        fileDriveDumppDir.mkdirs();
+        log.debug("Created directory {}", driveDumpDir);
+
+        createFillFiles(fileDriveDumppDir, fillSize);
+        log.info("Completed creating fill template files");
+
+        if (fillSize == 4) {
+            startDumpTunedRandomFiles4(fileDrive, driveDumpDir, threads);
+        } else if (fillSize == 10) {
+            startDumpTunedRandomFiles10(fileDrive, driveDumpDir, threads);
         }
     }
 
@@ -228,6 +255,41 @@ public class FillDiskService {
         executor.awaitTermination(60, TimeUnit.SECONDS);
     }
 
+    private void executeTunedRandomInThreadPool(File fileDrive, String driveDumpDir, int threads, long fileSizeBytes, String fileNameSuffix) throws InterruptedException {
+        AtomicInteger fileCounter = new AtomicInteger(0);
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
+
+        int numOfFiles = (int) (SystemUtil.getFreeSpace(fileDrive) / fileSizeBytes);
+        int previousNumOfFiles = Integer.MAX_VALUE;
+        log.info("Number of pending files {} for free space {} and file size {}", numOfFiles, (SystemUtil.getFreeSpace(fileDrive)), fileSizeBytes);
+        while (numOfFiles > 0 && previousNumOfFiles != numOfFiles) {
+            previousNumOfFiles = numOfFiles;
+            if (numOfFiles > threads) {
+                numOfFiles = threads;
+            }
+
+            IntStream.rangeClosed(1, numOfFiles).forEach(iFile -> {
+                executor.submit(() -> {
+                    int fileIndex = fileCounter.incrementAndGet();
+                    FileUtil.createFileStatic(driveDumpDir, fileIndex, fileNameSuffix);
+                    return null;
+                });
+                Util.sleepMillisSilent(10);
+            });
+
+            while (executor.getTaskCount() != executor.getCompletedTaskCount()) {
+                log.trace("Execution tasks for file size {} completed/total [{}/{}]", fileNameSuffix, executor.getCompletedTaskCount(), executor.getTaskCount());
+                Util.sleepMillisSilent(100);
+            }
+            log.info("Execution tasks for file size {} completed/total [{}/{}]", fileNameSuffix, executor.getCompletedTaskCount(), executor.getTaskCount());
+            numOfFiles = (int) (SystemUtil.getFreeSpace(fileDrive) / fileSizeBytes);
+            log.info("Number of pending files {} for free space {} and file size {}", numOfFiles, (SystemUtil.getFreeSpace(fileDrive)), fileSizeBytes);
+        }
+
+        executor.shutdown();
+        executor.awaitTermination(60, TimeUnit.SECONDS);
+    }
+
     private void executeStaticInThreadPool(File fileDrive, String driveDumpDir, int threads, long fileSizeBytes, String fileNameSuffix) throws InterruptedException {
         int numOfFiles = (int) (SystemUtil.getFreeSpace(fileDrive) / fileSizeBytes);
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
@@ -269,6 +331,34 @@ public class FillDiskService {
         executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 100, "100B");
         executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 10, "10B");
         executeRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 1, "1B");
+    }
+
+    private void startDumpTunedRandomFiles4(File fileDrive, String driveDumpDir, int threads) throws InterruptedException {
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4GB * 1, "4GB");
+
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 100, "400MB");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 10, "40MB");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4MB * 1, "4MB");
+
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4KB * 100, "400KB");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4KB * 10, "40KB");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES4KB * 1, "4KB");
+    }
+
+    private void startDumpTunedRandomFiles10(File fileDrive, String driveDumpDir, int threads) throws InterruptedException {
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1GB * 1, "1GB");
+
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1MB * 100, "100MB");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1MB * 10, "10MB");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1MB * 1, "1MB");
+
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1KB * 100, "100KB");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1KB * 10, "10KB");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1KB * 1, "1KB");
+
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 100, "100B");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 10, "10B");
+        executeTunedRandomInThreadPool(fileDrive, driveDumpDir, threads, FileUtil.BYTES1B * 1, "1B");
     }
 
     private void startDumpStaticFiles4(File fileDrive, String driveDumpDir, int threads) throws InterruptedException {

@@ -87,7 +87,7 @@ public class FileUtil {
             log.info("Created fill {} file {} in {}", iFile, toCopyFileName, getFormattedStopTime(stopWatch));
         } catch (IOException ioException) {
             stopWatch.stop();
-            log.warn("Exception creating fill {} file {} in {}", iFile, toCopyFileName, getFormattedStopTime(stopWatch), ioException);
+            log.info("Exception {} creating fill {} file {} in {}", ioException.getMessage(), iFile, toCopyFileName, getFormattedStopTime(stopWatch));
         }
     }
 
