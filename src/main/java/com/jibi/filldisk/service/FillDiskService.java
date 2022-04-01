@@ -271,7 +271,7 @@ public class FillDiskService {
             IntStream.rangeClosed(1, numOfFiles).forEach(iFile -> {
                 executor.submit(() -> {
                     int fileIndex = fileCounter.incrementAndGet();
-                    FileUtil.createFileStatic(driveDumpDir, fileIndex, fileNameSuffix);
+                    FileUtil.createFileTuneRandom(driveDumpDir, fileIndex, fileNameSuffix, fileSizeBytes);
                     return null;
                 });
                 Util.sleepMillisSilent(10);

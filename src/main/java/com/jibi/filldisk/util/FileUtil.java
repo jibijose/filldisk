@@ -74,23 +74,6 @@ public class FileUtil {
         FILLORDER10.add(1L * 1);
     }
 
-    public static void createFileStatic(final String driveDumpDir, final int iFile, final String toFilename) {
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-        String toCopyFileName = DateUtil.getDateTimeFormatted() + "-" + toFilename;
-        log.debug("Creating random {} file {}", iFile, toFilename);
-        try {
-            Path copied = Paths.get(driveDumpDir, toCopyFileName);
-            Path originalPath = Paths.get(driveDumpDir, toFilename);
-            Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
-            stopWatch.stop();
-            log.info("Created fill {} file {} in {}", iFile, toCopyFileName, getFormattedStopTime(stopWatch));
-        } catch (IOException ioException) {
-            stopWatch.stop();
-            log.info("Exception {} creating fill {} file {} in {}", ioException.getMessage(), iFile, toCopyFileName, getFormattedStopTime(stopWatch));
-        }
-    }
-
     public static void createFileRandom(final String driveDumpDir, final int iFile, final String toFilename, long byteSize) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
@@ -105,6 +88,40 @@ public class FileUtil {
         } catch (IOException ioException) {
             stopWatch.stop();
             log.warn("Exception creating random {} file {} with size {} in {}", iFile, toCopyFileName, (int) byteSize, getFormattedStopTime(stopWatch), ioException);
+        }
+    }
+
+    public static void createFileTuneRandom(final String driveDumpDir, final int iFile, final String toFilename, long byteSize) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        String toCopyFileName = DateUtil.getDateTimeFormatted() + "-" + toFilename;
+        log.debug("Creating random {} file {} with size {}", iFile, toFilename, (int) byteSize);
+        try {
+            Path copied = Paths.get(driveDumpDir, toCopyFileName);
+            Path originalPath = Paths.get(driveDumpDir, toFilename);
+            Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+            stopWatch.stop();
+            log.info("Created fill {} file {} in {}", iFile, toCopyFileName, getFormattedStopTime(stopWatch));
+        } catch (IOException ioException) {
+            stopWatch.stop();
+            log.info("Exception {} creating fill {} file {} in {}", ioException.getMessage(), iFile, toCopyFileName, getFormattedStopTime(stopWatch));
+        }
+    }
+
+    public static void createFileStatic(final String driveDumpDir, final int iFile, final String toFilename) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        String toCopyFileName = DateUtil.getDateTimeFormatted() + "-" + toFilename;
+        log.debug("Creating random {} file {}", iFile, toFilename);
+        try {
+            Path copied = Paths.get(driveDumpDir, toCopyFileName);
+            Path originalPath = Paths.get(driveDumpDir, toFilename);
+            Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+            stopWatch.stop();
+            log.info("Created fill {} file {} in {}", iFile, toCopyFileName, getFormattedStopTime(stopWatch));
+        } catch (IOException ioException) {
+            stopWatch.stop();
+            log.info("Exception {} creating fill {} file {} in {}", ioException.getMessage(), iFile, toCopyFileName, getFormattedStopTime(stopWatch));
         }
     }
 
