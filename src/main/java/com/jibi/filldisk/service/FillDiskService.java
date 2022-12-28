@@ -98,22 +98,40 @@ public class FillDiskService {
     }
 
     private File getDrive(String driveLetter) {
+        String drive = null;
         if (SystemUtil.isWindowsOS()) {
-            String drive = driveLetter + ":\\";
+            if (driveLetter.endsWith("\\") && driveLetter.length() == 3) {
+                drive = driveLetter;
+            } else if (driveLetter.endsWith(":")) {
+                drive = driveLetter + "\\";
+            } else if (driveLetter.length() == 1) {
+                drive = driveLetter + ":\\";
+            } else if (driveLetter.endsWith("\\")) {
+                drive = driveLetter.substring(0, (driveLetter.length() - 1));
+            } else {
+                drive = driveLetter;
+            }
             log.info("Windows drive = {}", drive);
-            return new File(drive);
+
         } else {
-            String drive = driveLetter;
+            drive = driveLetter;
             log.info("Non-Windows drive = {}", drive);
-            return new File(drive);
         }
+        return new File(drive);
     }
 
     private String getDriveDumpDir(String driveLetter) {
         String driveDumpDir;
         if (SystemUtil.isWindowsOS()) {
-            String drive = driveLetter + ":\\";
-            driveDumpDir = drive + "\\DUMPDIR";
+            if (driveLetter.endsWith("\\")) {
+                driveDumpDir = driveLetter + "DUMPDIR";
+            } else if (driveLetter.endsWith(":")) {
+                driveDumpDir = driveLetter + "\\DUMPDIR";
+            } else if (driveLetter.length() == 1) {
+                driveDumpDir = driveLetter + ":\\DUMPDIR";
+            } else {
+                driveDumpDir = driveLetter + "\\DUMPDIR";
+            }
             log.info("Windows drive dump dir = {}", driveDumpDir);
         } else {
             String drive = driveLetter;
