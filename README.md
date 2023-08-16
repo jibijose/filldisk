@@ -3,6 +3,11 @@
 # Introduction
 Utility to fill random data in drive (or drive till quota is over)
 
+# Build status   
+[![Github actions build](https://github.com/jibijose/filldisk/actions/workflows/maven.yml/badge.svg)](https://github.com/jibijose/filldisk/actions/workflows/maven.yml)   
+
+
+
 # Build setup
 
 ## Requirements
