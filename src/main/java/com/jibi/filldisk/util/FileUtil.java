@@ -1,7 +1,11 @@
 package com.jibi.filldisk.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.util.StopWatch;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +21,15 @@ public class FileUtil {
     public static Map<Long, String> FILLFILESMAP;
     public static LinkedHashSet<Long> FILLORDER4;
     public static LinkedHashSet<Long> FILLORDER10;
+
+    public static long BYTES1GB = 1024 * 1024 * 1024;
+    public static long BYTES1MB = 1024 * 1024;
+    public static long BYTES1KB = 1024;
+    public static long BYTES1B = 1;
+
+    public static long BYTES4GB = BYTES1GB * 4;
+    public static long BYTES4MB = BYTES1MB * 4;
+    public static long BYTES4KB = BYTES1KB * 4;
 
     static {
         FILLFILESMAP = new HashMap<Long, String>();
@@ -37,14 +50,8 @@ public class FileUtil {
         FILLFILESMAP.put(1L * 1024 * 1024 * 400, "400MB");
         FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 1, "1GB");
         FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 4, "4GB");
-        //FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 10, "10GB");
-        //FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 40, "40GB");
-        //FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 100, "100GB");
-        //FILLFILESMAP.put(1L * 1024 * 1024 * 1024 * 400, "400GB");
 
         FILLORDER4 = new LinkedHashSet<>();
-        //FILLORDER4.add(1L * 1024 * 1024 * 1024 * 400);
-        //FILLORDER4.add(1L * 1024 * 1024 * 1024 * 40);
         FILLORDER4.add(1L * 1024 * 1024 * 1024 * 4);
         FILLORDER4.add(1L * 1024 * 1024 * 400);
         FILLORDER4.add(1L * 1024 * 1024 * 40);
@@ -54,8 +61,6 @@ public class FileUtil {
         FILLORDER4.add(1L * 1024 * 4);
 
         FILLORDER10 = new LinkedHashSet<>();
-        //FILLORDER10.add(1L * 1024 * 1024 * 1024 * 100);
-        //FILLORDER10.add(1L * 1024 * 1024 * 1024 * 10);
         FILLORDER10.add(1L * 1024 * 1024 * 1024 * 1);
         FILLORDER10.add(1L * 1024 * 1024 * 1024 * 1);
         FILLORDER10.add(1L * 1024 * 1024 * 100);
@@ -69,11 +74,85 @@ public class FileUtil {
         FILLORDER10.add(1L * 1);
     }
 
-    public static void createFile(final String driveDumpDir, final String fromFilename, final String toFilename) throws IOException {
-        Path copied = Paths.get(driveDumpDir + "/" + toFilename);
-        Path originalPath = Paths.get(driveDumpDir + "/" + fromFilename);
-        Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
-        log.debug("Created fill file {}", toFilename);
+    public static void createFileRandom(final String driveDumpDir, final int iFile, final String toFilename, long byteSize) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        String toCopyFileName = DateUtil.getDateTimeFormatted() + "-" + toFilename;
+        log.debug("Creating random {} file {} with size {}", iFile, toFilename, (int) byteSize);
+        try {
+            String fileContent = RandomStringUtils.randomAlphanumeric((int) byteSize);
+            File file = new File(driveDumpDir + "/" + toCopyFileName);
+            FileUtils.writeStringToFile(file, fileContent, "UTF-8", false);
+            stopWatch.stop();
+            log.info("Created random {} file {} with size {} in {}", iFile, toFilename, (int) byteSize, getFormattedStopTime(stopWatch));
+        } catch (IOException ioException) {
+            stopWatch.stop();
+            log.warn("Exception creating random {} file {} with size {} in {}", iFile, toCopyFileName, (int) byteSize, getFormattedStopTime(stopWatch), ioException);
+        }
+    }
+
+    public static void createFileTuneRandom(final String driveDumpDir, final int iFile, final String toFilename, long byteSize) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        String toCopyFileName = DateUtil.getDateTimeFormatted() + "-" + toFilename;
+        log.debug("Creating random {} file {} with size {}", iFile, toFilename, (int) byteSize);
+        try {
+            Path copied = Paths.get(driveDumpDir, toCopyFileName);
+            Path originalPath = Paths.get(driveDumpDir, toFilename);
+            Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+            stopWatch.stop();
+            log.info("Created fill {} file {} in {}", iFile, toCopyFileName, getFormattedStopTime(stopWatch));
+        } catch (IOException ioException) {
+            stopWatch.stop();
+            log.info("Exception {} creating fill {} file {} in {}", ioException.getMessage(), iFile, toCopyFileName, getFormattedStopTime(stopWatch));
+        }
+    }
+
+    public static void createFileStatic(final String driveDumpDir, final int iFile, final String toFilename) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        String toCopyFileName = DateUtil.getDateTimeFormatted() + "-" + toFilename;
+        log.debug("Creating random {} file {}", iFile, toFilename);
+        try {
+            Path copied = Paths.get(driveDumpDir, toCopyFileName);
+            Path originalPath = Paths.get(driveDumpDir, toFilename);
+            Files.copy(originalPath, copied, StandardCopyOption.REPLACE_EXISTING);
+            stopWatch.stop();
+            log.info("Created fill {} file {} in {}", iFile, toCopyFileName, getFormattedStopTime(stopWatch));
+        } catch (IOException ioException) {
+            stopWatch.stop();
+            log.info("Exception {} creating fill {} file {} in {}", ioException.getMessage(), iFile, toCopyFileName, getFormattedStopTime(stopWatch));
+        }
+    }
+
+    private static String getFormattedStopTime(StopWatch stopWatch) {
+        String formattedStopTime = "[";
+        long stopTime = stopWatch.getTotalTimeMillis();
+        long originalStopTime = stopTime;
+        if (stopTime > 60 * 60 * 1000) {
+            formattedStopTime = formattedStopTime + (stopTime / (60 * 60 * 1000)) + " hours, ";
+            stopTime = stopTime % (60 * 60 * 1000);
+        }
+        if (stopTime > 60 * 1000) {
+            formattedStopTime = formattedStopTime + (stopTime / (60 * 1000)) + " minutes, ";
+            stopTime = stopTime % (60 * 1000);
+        }
+        if (stopTime > 1000) {
+            formattedStopTime = formattedStopTime + (stopTime / (1000)) + " seconds, ";
+            stopTime = stopTime % (1000);
+        }
+        if (stopTime >= 1) {
+            formattedStopTime = formattedStopTime + (stopTime / (1)) + " millis, ";
+            stopTime = stopTime % (1);
+        }
+
+        formattedStopTime = formattedStopTime.trim();
+        if (formattedStopTime.endsWith(",")) {
+            formattedStopTime = formattedStopTime.substring(0, formattedStopTime.length() - 1);
+        }
+        formattedStopTime = formattedStopTime + "]";
+        log.debug("Formatted original stop time {} to {}", originalStopTime, formattedStopTime);
+        return formattedStopTime;
     }
 
 }
