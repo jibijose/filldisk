@@ -69,26 +69,32 @@ public class FillDiskApplication implements CommandLineRunner {
             throw new RuntimeException("Drive is needed");
         }
 
-        int fillSize = -1;
+        int fillSize = 4;
         if (cmd.getOptionValue("f") != null) {
             fillSize = Integer.parseInt(cmd.getOptionValue("f"));
+            log.info("Selected fill size {}", fillSize);
         } else {
-            throw new RuntimeException("Fill size is needed");
+            log.info("Defaulted to fill size 4");
         }
 
-        FileType fileType = FileType.STATIC;
+        FileType fileType = FileType.RANDOM;
         if (cmd.getOptionValue("r") != null) {
             fileType = Enum.valueOf(FileType.class, cmd.getOptionValue("r"));
+            log.info("fileType mode {} selected", fileType);
+        } else {
+            log.info("Defaulted to RANDOM mode");
         }
 
         int threads = 1;
         if (cmd.getOptionValue("t") != null) {
             threads = Integer.parseInt(cmd.getOptionValue("t"));
+            log.info("Using processor threads {}", threads);
         } else {
             int processors = Runtime.getRuntime().availableProcessors();
             if (processors >= 2) {
                 threads = processors / 2;
             }
+            log.info("Defaulting to thread {}", threads);
         }
         log.info("Application started with drive={} fillSize={} randomData={} threads={}", driveLetter, fillSize, fileType, threads);
 

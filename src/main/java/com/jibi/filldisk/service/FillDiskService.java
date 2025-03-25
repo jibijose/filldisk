@@ -255,7 +255,9 @@ public class FillDiskService {
     }
 
     private void executeRandomInThreadPool(File fileDrive, String driveDumpDir, int threads, long fileSizeBytes, String fileNameSuffix) throws InterruptedException {
-        int numOfFiles = (int) (SystemUtil.getFreeSpace(fileDrive) / fileSizeBytes);
+        long freeSpace = SystemUtil.getFreeSpace(fileDrive);
+        int numOfFiles = (int) (freeSpace / fileSizeBytes);
+        log.info("Trying to fill {} files of size {} into free space {}", numOfFiles, fileSizeBytes, freeSpace);
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threads);
         IntStream.rangeClosed(1, numOfFiles).forEach(iFile -> {
             executor.submit(() -> {
