@@ -5,6 +5,7 @@ import org.apache.commons.lang3.SystemUtils;
 
 import javax.swing.filechooser.FileSystemView;
 import java.io.File;
+import java.text.DecimalFormat;
 
 @Slf4j
 public class SystemUtil {
@@ -37,6 +38,31 @@ public class SystemUtil {
         return file.getUsableSpace();
     }
 
+    public static String getFormattedBytes(long bytesLeft) {
+        DecimalFormat df = new DecimalFormat("#.###");
+        double GB_COUNT = 0;
+        double MB_COUNT = 0;
+        double KB_COUNT = 0;
+        double B_COUNT = 0;
+
+        if (bytesLeft >= FileUtil.BYTES1GB) {
+            GB_COUNT = bytesLeft / (double) FileUtil.BYTES1GB;
+            return df.format(GB_COUNT) + " GBytes";
+        }
+        if (bytesLeft >= FileUtil.BYTES1MB) {
+            MB_COUNT = bytesLeft / (double) FileUtil.BYTES1MB;
+            return df.format(MB_COUNT) + " MBytes";
+        }
+        if (bytesLeft >= FileUtil.BYTES1KB) {
+            KB_COUNT = bytesLeft / (double) FileUtil.BYTES1KB;
+            return df.format(KB_COUNT) + " KBytes";
+        }
+        if (bytesLeft >= FileUtil.BYTES1B) {
+            B_COUNT = bytesLeft / (double) FileUtil.BYTES1B;
+            return df.format(B_COUNT) + " Bytes";
+        }
+        return "NOT-FORMATTED";
+    }
 
     public static String getFormattedFreeSpace(File file) {
         long bytesLeft = file.getFreeSpace();
