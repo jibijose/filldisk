@@ -45,7 +45,25 @@ jobs:
           jdkArchitectureOption: 'x64'
           jdkSourceOption: 'PreInstalled'
       - task: Bash@3
-        displayName: Run jdk17 maven
+        displayName: Run jdk21 maven
+        inputs:
+          targetType: 'inline'
+          script: |
+            ./mvnw clean package
+  - job: JDK25_Maven_Run
+    displayName: 'JDK25-Maven-Run'
+    timeoutInMinutes: 10
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: JavaToolInstaller@0
+        displayName: Install jdk
+        inputs:
+          versionSpec: '25'
+          jdkArchitectureOption: 'x64'
+          jdkSourceOption: 'PreInstalled'
+      - task: Bash@3
+        displayName: Run jdk25 maven
         inputs:
           targetType: 'inline'
           script: |
