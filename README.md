@@ -13,7 +13,7 @@ https://dev.azure.com/jibijose/github-code/_apis/build/status%2Ffilldisk%2Fmaven
 ## Requirements
 | Software      | Version |        Verify |                                                Comments |
 |---------------|:-------:|--------------:|--------------------------------------------------------:|
-| java          |   11+   | java -version | Any version 11 or above<br/>Check appveyor build status |
+| java          |   17+   | java -version | Any version 17 or above<br/>Check appveyor build status |
 
 ## Build locally
 ```
@@ -32,6 +32,7 @@ java -jar target/filldisk-1.0.0-SNAPSHOT.jar
 
 # Examples
 ```
+java -Xms1G -Xmx4G -jar target/filldisk-1.0.0-SNAPSHOT.jar -d "C:\\JJ"  
 java -Xms1G -Xmx4G -jar target/filldisk-1.0.0-SNAPSHOT.jar -t 4 -f  4 -r STATIC -d C 
 java -Xms1G -Xmx4G -jar target/filldisk-1.0.0-SNAPSHOT.jar -t 2 -f 10 -r TUNEDRANDOM -d C:\
 java -Xms1G -Xmx4G -jar target/filldisk-1.0.0-SNAPSHOT.jar -t 2 -f  4 -r RANDOM -d "C:\\JJ"
